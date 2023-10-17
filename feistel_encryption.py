@@ -1,6 +1,7 @@
 import random
+import binascii
 
-# Function to generate random binary key of length p
+# Function to generate random binary key of given length
 def generate_random_key(length):
     binary_key = ""
     for i in range(length):
@@ -8,7 +9,7 @@ def generate_random_key(length):
         binary_key += str(bit)
     return binary_key
 
-# Function to perform bitwise XOR operation on two binary strings a and b
+# Function to perform bitwise XOR operation on two binary strings
 def bitwise_xor(a, b):
     result = ""
     for i in range(len(a)):
@@ -23,44 +24,30 @@ def binary_to_decimal(binary):
     decimal = int(binary, 2)
     return decimal
 
-# Input plain text
+# Plain text input
 plain_text = "Hello"
-print("Plain Text:", plain_text)
+print("Plain Text is:", plain_text)
 
-# Convert plain text to ASCII and then to 8-bit binary format
+# Encryption
 ascii_values = [ord(char) for char in plain_text]
 binary_text = [format(value, '08b') for value in ascii_values]
 binary_text = "".join(binary_text)
 
-# Divide the binary text into two halves
 half_length = len(binary_text) // 2
-left_half = binary_text[:half_length]
-right_half = binary_text[half_length:]
+L1_encrypt = binary_text[:half_length]
+R1_encrypt = binary_text[half_length:]
 
-# Generate two random keys for the first and second rounds
-key1_length = len(right_half)
-key2_length = key1_length
-key1 = generate_random_key(key1_length)
-key2 = generate_random_key(key2_length)
+K1 = generate_random_key(len(R1_encrypt))
+K2 = generate_random_key(len(R1_encrypt))
 
-# First round of Feistel network
-f1_result = bitwise_xor(right_half, key1)
-new_right_half = bitwise_xor(f1_result, left_half)
-new_left_half = right_half
+f1_encrypt = bitwise_xor(R1_encrypt, K1)
+L2_encrypt = bitwise_xor(f1_encrypt, L1_encrypt)
+R2_encrypt = R1_encrypt
 
-# Second round of Feistel network
-f2_result = bitwise_xor(new_right_half, key2)
-final_right_half = bitwise_xor(f2_result, new_left_half)
-final_left_half = new_right_half
+f2_encrypt = bitwise_xor(L2_encrypt, K2)
+L3_encrypt = bitwise_xor(f2_encrypt, R2_encrypt)
+R3_encrypt = L2_encrypt
 
-# Concatenate the halves to get the binary cipher text
-binary_cipher_text = final_left_half + final_right_half
-
-# Convert binary cipher text to string
-cipher_text = ''
-for i in range(0, len(binary_cipher_text), 7):
-    temp_data = binary_cipher_text[i:i + 7]
-    decimal_data = binary_to_decimal(temp_data)
-    cipher_text += chr(decimal_data)
-
+# Ciphertext
+cipher_text = L3_encrypt + R3_encrypt
 print("Cipher Text:", cipher_text)
